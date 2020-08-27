@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width">
+<script src="js/jquery-2.1.3.min.js"></script>
+<link rel="stylesheet" href="css/sample.css">
+<title>じゃんけん</title>
+</head>
+<body>
+
+<header>
+  <h1>じゃんけん</h1>
+</header>
+
+<main>
+  <ul>
+    <li id="gu_btn">グー</li>
+    <li id="cho_btn">チョキ</li>
+    <li id="par_btn">パー</li>
+  </ul>
+  <div>コンピュータの出した手は？「<span id="pc_hands">なに？</span>」</div>
+  <div id="judgment">勝ち</div>
+</main>
+
+<footer></footer>
+<script>
+//じゃんけん用のSCRIPTを書いてください
+//1.クリックイベント
+//2.乱数を生成
+//3.if文を３個用意「”グー”　”チョキ”　”パー”」
+//4.ifのなかに$("echo").html()を使って表示させる
+
+
+//じゃんけん用のSCRIPT
+let pc_hands = '';
+  let user_hands = '';
+
+  function pc_hand_roulette(){
+    const rand_num = Math.ceil(Math.random() * 3);
+    if(rand_num == 1){
+      pc_hands = 'グー！';
+    } else if(rand_num == 2){
+      pc_hands = 'チョキ！';
+    } else {
+      pc_hands = 'パー！';
+    }
+    $('#pc_hands').text(pc_hands);
+  }
+
+  function janken_judgment(){
+    if(pc_hands == user_hands){
+      $('#judgment').text('あいこ！（もう1回出す手を選んで）');
+    } else if (pc_hands == 'グー！' && user_hands == 'チョキ！'){
+      $('#judgment').text('あなたの負け！');
+    } else if (pc_hands == 'グー！' && user_hands == 'パー！'){
+      $('#judgment').text('あなたの勝ち！');
+    } else if (pc_hands == 'チョキ！' && user_hands == 'パー！'){
+      $('#judgment').text('あなたの負け！');
+    } else if (pc_hands == 'チョキ！' && user_hands == 'グー！'){
+      $('#judgment').text('あなたの勝ち！');
+    } else if (pc_hands == 'パー！' && user_hands == 'グー！'){
+      $('#judgment').text('あなたの負け！');
+    } else if (pc_hands == 'パー！' && user_hands == 'チョキ！'){
+      $('#judgment').text('あなたの勝ち！');
+    }
+  }
+
+  // グーをクリックした場合
+  $('#rock_btn').on('click', function(){
+    user_hands = 'グー！'
+    pc_hand_roulette();
+    janken_judgment();
+  })
+
+  // チョキをクリックした場合
+  $('#scissors_btn').on('click', function(){
+    user_hands = 'チョキ！'
+    pc_hand_roulette();
+    janken_judgment();
+  })
+
+  // パーをクリックした場合
+  $('#paper_btn').on('click', function(){
+    user_hands = 'パー！'
+    pc_hand_roulette();
+    janken_judgment();
+  })
+
+
+  let difficulty = 'easy';
+  $('#easy-mode').on('click', function(){
+    difficulty = 'easy'
+    $('#hard-mode').css('background-color', 'white');
+    $('#hard-mode').css('color', 'black');
+    $('#easy-mode').css('background-color', 'navy');
+    $('#easy-mode').css('color', 'white');
+  })
+  
+  $('#hard-mode').on('click', function(){
+    difficulty = 'hard';
+    $('#easy-mode').css('background-color', 'white');
+    $('#easy-mode').css('color', 'black');
+    $('#hard-mode').css('background-color', 'navy');
+    $('#hard-mode').css('color', 'white');
+  })
+  
+  //ターンの表示
+  let player_turn = true; // ターンを定義。trueがplayerでfalseがcom。デフォルトはplayer
+  function turn_change(){
+    if(player_turn){
+      $('#turn').text('あなた');
+      $('#ok-btn').show();
+    } else {
+      $('#turn').text('COM');
+      $('#ok-btn').hide();
+    }
+  }
+
+
+  turn_change();
+
+  //playerのターンの処理開始
+  let button_num = 0; // 選択された数字
+  let button_status_array = [true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true]; //選択された数字の状態
+
+  $('td.number').on('click', function(){
+    // 選択された数字のidを取得
+    button_num = $(this).attr('id');
+    button_num = Number(button_num.substr(6));
+
+    if(!player_turn){
+      alert('COMの番です')
+    }
+
+    // 数字をクリックすることにより、当該数字を仮選択している状態とする（tentativeとしている）
+    if(player_turn && button_status_array[button_num - 1] == 'tentative'){    // 仮選択されている数字をもう1回クリックすると、元の状態に戻る
+      $('#number' + button_num).css('background-color', '');
+      $('#number' + button_num).css('color', '');
+      button_status_array[button_num - 1] = true;
+    } else if(player_turn && button_status_array[button_num - 1] && (button_num <= 3 || !button_status_array[button_num - 4])){ // クリックした数字が、まだ選択されておらず、すでに選択されている数字から3以内の距離にある場合は、仮選択することができる
+      $('#number' + button_num).css('background-color', 'lightskyblue');
+      $('#number' + button_num).css('color', 'gray');
+      button_status_array[button_num - 1] = 'tentative';
+    } else if(player_turn && !button_status_array[button_num - 1]) { // 選択済みの数字をクリックしたらalertが出る
+      alert('その数字はもう選択済みです');
+    } else if(player_turn) {
+      alert('1回のターンで選択できる数字は3つ以内の連番のみです');
+    }
+  })
+
+  // OKボタンのクリックにより、comのターンに突入
+  $('#ok-btn').on('click', function(){
+    // 選択数字がない場合には、alertが出るようにする。また、3つ以内の連番が選択されていない場合にもalertが出るようにする。それ以外の場合に、comのターンに入る
+    if(button_status_array.indexOf('tentative') == -1){
+      alert('数字を選択してください');
+    } else if(button_status_array[(button_status_array.indexOf(true)) + 1] == 'tentative' || button_status_array[(button_status_array.indexOf(true)) + 2] == 'tentative'){
+      alert('数字は連番で選択してください')
+    } else {
+      for(let i = 0; i < button_status_array.length; i++){
+        if(button_status_array[i] == 'tentative'){
+          button_status_array.splice(i, 1, false);
+        }
+      }
+      // comのターンに変更
+      player_turn = false;
+      turn_change();
+
+      // comのターンの処理開始
+      // イージーモードの場合：すでに選択されている数字から、3つ以内の数字をランダムで選択する
+      if(difficulty == 'easy'){
+        const com_choice = Math.floor(Math.random() * 3);
+        const first_true_number = button_status_array.indexOf(true);
+
+        for(let i = 0; i <= com_choice; i++){
+          button_status_array[first_true_number + i] = false;
+          $('#number' + (first_true_number + (i + 1))).css('background-color', 'pink');
+          $('#number' + (first_true_number + (i + 1))).css('color', 'gray');
+        }
+      }
+      // ハードモードの場合：playerが必勝法を使う場合はランダム、使わない場合は必勝法を用いる
+      else {
+        const first_true_number = button_status_array.indexOf(true);
+        function com_choice(num){
+          const gap = num - first_true_number + 1;
+          if(gap <= 3){
+            for(let i = 0; i < gap; i++){
+              button_status_array[first_true_number + i] = false;
+              $('#number' + (first_true_number + (i + 1))).css('background-color', 'pink');
+              $('#number' + (first_true_number + (i + 1))).css('color', 'gray');
+            }
+          } else {
+            const com_choice = Math.floor(Math.random() * 3);
+            for(let i = 0; i <= com_choice; i++){
+              button_status_array[first_true_number + i] = false;
+              $('#number' + (first_true_number + (i + 1))).css('background-color', 'pink');
+              $('#number' + (first_true_number + (i + 1))).css('color', 'gray');
+            }
+          }
+        }
+
+        if(first_true_number == 0){
+          com_choice(0);
+        } else if (first_true_number <= 4){
+          com_choice(4);
+        } else if (first_true_number <= 8){
+          com_choice(8);
+        } else if (first_true_number <= 12){
+          com_choice(12);
+        } else if (first_true_number <= 16){
+          com_choice(16);
+        } else if (first_true_number <= 20){
+          com_choice(20);
+        } else if (first_true_number <= 24){
+          com_choice(24);
+        } else if (first_true_number <= 28){
+          com_choice(28);
+        } else if (first_true_number == 29){
+          com_choice(29);
+        }
+      }
+
+   
+      if(!button_status_array[29]){
+        $('#result').text('あなたの勝ち!!');
+        $('#result').css('color', 'red');
+      } else if(!button_status_array[28]){
+        $('#result').text('あなたの負け...');
+        $('#result').css('color', 'blue');
+      }
+
+      player_turn = true;
+      turn_change();
+
+      
+    }
+  })
+
+
+  
+
+
+
+
+
+
+</script>
+</body>
+</html>
